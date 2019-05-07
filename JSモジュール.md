@@ -7,9 +7,9 @@
   块的内部数据/实现是私有的, 只是向外部暴露一些接口(方法)与外部其它模块通信
 2. 模块化的好处
   　　　避免命名冲突(减少命名空间污染)
-  　　　更好的分离, 按需加载
-  　　　更高复用性
-  　　　高可维护性
+    　　　更好的分离, 按需加载
+    　　　更高复用性
+    　　　高可维护性
 3. 为什么要モジュール
 
 + web sites are turning into Web Apps
@@ -303,7 +303,141 @@ Browserify是在转译(编译)时就会加载打包(合并)require的模块
     })()
     ```
 
+## ES6
 
+###export
+
+1. 分多次导出模块的多个部分
+   export class Emp{  }
+   	export function fun(){  }
+   	export var person = {};
+
+2. 一次导出模块的多个部分
+   class Emp{  }
+   	function fun(){  }
+   	var person = {};
+   	export {Emp, fun, person}
+
+3. default导出(只能有一个)
+
+   ```javascript
+   export default {       //导入默认的    而且有且只有一个
+     name: 'Tom',
+     setName: function (name) {
+       this.name = name
+     }
+   }
+   ```
+
+###import
+
+```javascript
+//es6 解构赋值的形式去拿值  分割代入 (Destructuring assignment)
+//中间那玩意是变量
+import defaultModule from './myModule';  //导入默认的
+import {Emp} from './myModule'; //导入指定的一个
+import {Emp, person} from './myModule'; //导入指定的多个
+import * as allFromModule from './myModule';  //导入所有
+```
+
+###Babel-Browserify使用教程
+
+1. 定义package.json文件
+  ```
+  {
+    "name" : "es6-babel-browserify",
+    "version" : "1.0.0"
+  }
+  ```
+
+2. 安装babel-cli, babel-preset-es2015和browserify   
+  * npm install babel-cli browserify -g  
+
+  ```javascript
+  //cli : command line interface
+  ```
+
+   * npm install babel-preset-es2015 --save-dev 
+   * preset 预设(将es6转换成es5的所有插件打包)
+
+3. 定义```.babelrc```文件 
+   ```json
+   {                           //rc  ： run control
+    "presets": ["es2015"]     //用来告诉babel 接下来要处理es2015
+     }
+   ```
+
+4. 编码
+  * js/src/module1.js  分别暴露
+    ```javascript
+    export function foo() {
+      console.log('module1 foo()');
+    }
+    export const DATA_ARR = [1, 3, 5, 1]
+    ```
+  * js/src/module2.js  统一暴露
+    ```javascript
+    let data = 'module2 data'
+    
+    function fun1() {
+      console.log('module2 fun1() ' + data);
+    }
+    export {fun1, fun2}
+    ```
+  * js/src/module3.js
+    ```javascript
+    export default {       //导入默认的    而且有且只有一个
+      name: 'Tom',
+      setName: function (name) {
+        this.name = name
+      }
+    }
+    ```
+  * js/src/app.js
+    ```javascript
+    import {foo, bar} from './module1'
+    import {DATA_ARR} from './module1'
+    import {fun1, fun2} from './module2'
+    import person from './module3'
+    
+    import $ from 'jquery'
+    $('body').css('background', 'red')
+    foo()
+    console.log(DATA_ARR);
+    fun2()
+    person.setName('JACK')
+    console.log(person.name);
+    ```
+
+5. **编译**
+
+  * 使用Babel将ES6编译为ES5代码(但包含CommonJS语法) :
+
+  ```javascript
+   babel js/src -d js/lib
+   //左边是要编译的文件夹   -d    右边输出的文件夹(不存在就自动创建)
+  ```
+
+  * 使用Browserify编译为浏览器可识别的js :
+
+  ```javascript
+   browserify js/lib/main.js -o js/lib/bundle.js
+  //仅仅编译 babel编译后的出口文件
+  ```
+
+6. 页面中引入测试
+  ```
+  <script type="text/javascript" src="js/lib/bundle.js"></script>
+  ```
+
+7. 引入第三方模块(jQuery)
+  1). 下载jQuery模块: 
+    * npm install jquery@1 --save
+    2). 在app.js中引入并使用
+    ```
+    import $ from 'jquery'
+    $('body').css('background', 'red')
+    ```
 
 
 
